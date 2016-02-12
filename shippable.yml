@@ -1,7 +1,11 @@
 language: node_js
 
 node_js:
-  - "0.10"
+  - 0.12
+  - 5.0    
+  - 4.2.2   
+  - 0.11
+  - 0.10
 
 addons:
   firefox: "23.0"
@@ -12,3 +16,26 @@ services:
 before_script:
   - "export DISPLAY=:99.0"
   - "/etc/init.d/xvfb start"
+build:   
+  
+  pre_ci_boot:
+    image_name: shippable/minv2
+    image_tag: latest
+    pull: true
+    options: '--privileged=true --net=bridge -e FOO=true -e BOO=false'
+
+  ci:
+    
+    - echo "Hello, World!"
+    - env
+    - echo $PATH
+    - reports --help
+    - node --version
+    - mkdir -p shippable/testresults
+    - mkdir -p shippable/codecoverage
+    - npm install
+    - ./node_modules/.bin/istanbul cover grunt -- -u tdd
+    - ./node_modules/.bin/istanbul report cobertura --dir  shippable/codecoverage/
+    - cat shippable/codecoverage/cobertura-coverage.xml
+    - export XUNIT_FILE=shippable/testresults/result.xml
+    - grunt      
